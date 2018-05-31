@@ -8,7 +8,10 @@ import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.log.Log;
 import servlets.SessionsServlet;
+import servlets.SignInServlet;
+import servlets.SignUpServlet;
 import servlets.UsersServlet;
 
 /**
@@ -26,6 +29,10 @@ public class Main {
         accountService.addNewUser(new UserProfile("test"));
 
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
+        // I don't really understand why the task require SingUpServlet and SingInServlet
+        // if their functionality fit in SessionServlet (realized in template already) and UsersServlet
+        context.addServlet(new ServletHolder(new SignUpServlet(accountService)), "/signup");
+        context.addServlet(new ServletHolder(new SignInServlet(accountService)), "/signin");
         context.addServlet(new ServletHolder(new UsersServlet(accountService)), "/api/v1/users");
         context.addServlet(new ServletHolder(new SessionsServlet(accountService)), "/api/v1/sessions");
 
@@ -39,6 +46,8 @@ public class Main {
         server.setHandler(handlers);
 
         server.start();
+        Log.getLog().info("Server started");
+
         server.join();
     }
 }

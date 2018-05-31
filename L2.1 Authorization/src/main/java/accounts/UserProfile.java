@@ -9,8 +9,9 @@ package accounts;
  */
 public class UserProfile {
     private final String login;
-    private final String pass;
-    private final String email;
+    // Final removed to implement doPut for UserServlet
+    private String pass;
+    private String email;
 
     public UserProfile(String login, String pass, String email) {
         this.login = login;
@@ -34,5 +35,12 @@ public class UserProfile {
 
     public String getEmail() {
         return email;
+    }
+
+    public void setPass(String newPass) {
+        pass = newPass;
+    }
+    public void setEmail(String newEmail) {
+        email = newEmail;
     }
 }

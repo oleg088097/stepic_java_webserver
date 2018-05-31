@@ -23,6 +23,10 @@ public class AccountService {
         loginToProfile.put(userProfile.getLogin(), userProfile);
     }
 
+    public void deleteUser(String userLogin) {
+        loginToProfile.remove(userLogin);
+    }
+
     public UserProfile getUserByLogin(String login) {
         return loginToProfile.get(login);
     }
