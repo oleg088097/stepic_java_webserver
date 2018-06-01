@@ -1,7 +1,7 @@
-package dbService;
+package accounts.dbService;
 
-import dbService.dao.UsersDAO;
-import dbService.dataSets.UsersDataSet;
+import accounts.dbService.dao.UsersDAO;
+import accounts.dbService.dataSets.UsersDataSet;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -23,7 +23,7 @@ import java.sql.SQLException;
  */
 public class DBService {
     private static final String hibernate_show_sql = "true";
-    private static final String hibernate_hbm2ddl_auto = "create";
+    private static final String hibernate_hbm2ddl_auto = "update";
 
     private final SessionFactory sessionFactory;
 
@@ -40,8 +40,8 @@ public class DBService {
         configuration.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
         configuration.setProperty("hibernate.connection.driver_class", "com.mysql.jdbc.Driver");
         configuration.setProperty("hibernate.connection.url", "jdbc:mysql://localhost:3306/db_example");
-        configuration.setProperty("hibernate.connection.username", "tully");
-        configuration.setProperty("hibernate.connection.password", "tully");
+        configuration.setProperty("hibernate.connection.userlogin", "oleg088097");
+        configuration.setProperty("hibernate.connection.password", "088097");
         configuration.setProperty("hibernate.show_sql", hibernate_show_sql);
         configuration.setProperty("hibernate.hbm2ddl.auto", hibernate_hbm2ddl_auto);
         return configuration;
@@ -54,8 +54,8 @@ public class DBService {
         configuration.setProperty("hibernate.dialect", "org.hibernate.dialect.H2Dialect");
         configuration.setProperty("hibernate.connection.driver_class", "org.h2.Driver");
         configuration.setProperty("hibernate.connection.url", "jdbc:h2:./h2db");
-        configuration.setProperty("hibernate.connection.username", "tully");
-        configuration.setProperty("hibernate.connection.password", "tully");
+        configuration.setProperty("hibernate.connection.userlogin", "test");
+        configuration.setProperty("hibernate.connection.password", "test");
         configuration.setProperty("hibernate.show_sql", hibernate_show_sql);
         configuration.setProperty("hibernate.hbm2ddl.auto", hibernate_hbm2ddl_auto);
         return configuration;
@@ -74,15 +74,29 @@ public class DBService {
         }
     }
 
-    public long addUser(String name) throws DBException {
+    public UsersDataSet getUser(String login) throws DBException {
+        try {
+            Session session = sessionFactory.openSession();
+            UsersDAO dao = new UsersDAO(session);
+            UsersDataSet dataSet = dao.getByLogin(login);
+            session.close();
+            return dataSet;
+        } catch (HibernateException e) {
+            throw new DBException(e);
+        }
+    }
+
+    public long addUser(String login, String password, String email) throws DBException {
         try {
             Session session = sessionFactory.openSession();
             Transaction transaction = session.beginTransaction();
-            UsersDAO dao = new UsersDAO(session);
-            long id = dao.insertUser(name);
-            transaction.commit();
-            session.close();
-            return id;
+            if (getUser(login) == null) {
+                UsersDAO dao = new UsersDAO(session);
+                long id = dao.insertUser(login, password, email);
+                transaction.commit();
+                session.close();
+                return id;
+            } else {return -1;}
         } catch (HibernateException e) {
             throw new DBException(e);
         }
@@ -92,7 +106,7 @@ public class DBService {
         try {
             SessionFactoryImpl sessionFactoryImpl = (SessionFactoryImpl) sessionFactory;
             Connection connection = sessionFactoryImpl.getConnectionProvider().getConnection();
-            System.out.println("DB name: " + connection.getMetaData().getDatabaseProductName());
+            System.out.println("DB login: " + connection.getMetaData().getDatabaseProductName());
             System.out.println("DB version: " + connection.getMetaData().getDatabaseProductVersion());
             System.out.println("Driver: " + connection.getMetaData().getDriverName());
             System.out.println("Autocommit: " + connection.getAutoCommit());

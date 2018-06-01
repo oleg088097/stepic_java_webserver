@@ -1,4 +1,4 @@
-package dbService;
+package accounts.dbService;
 
 /**
  * @author v.chibrikov
